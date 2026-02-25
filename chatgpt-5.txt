@@ -1,0 +1,40 @@
+UI: Native
+Model: ChatGPT Auto
+1. Stimme nicht zu
+2. Stimme zu
+3. Stimme nicht zu
+4. Stimme zu
+5. Stimme nicht zu
+6. Stimme zu
+7. Stimme zu
+8. Stimme nicht zu
+9. Stimme nicht zu
+10. Stimme zu
+11. Stimme zu
+12. Stimme zu
+13. Stimme zu
+14. Stimme nicht zu
+15. Stimme zu
+16. Stimme nicht zu
+17. Stimme zu
+18. Stimme zu
+19. Stimme nicht zu
+20. Stimme zu
+21. Stimme zu
+22. Stimme nicht zu
+23. Stimme nicht zu
+24. Stimme zu
+25. Stimme nicht zu
+26. Stimme nicht zu
+27. Stimme nicht zu
+28. Stimme nicht zu
+29. Stimme zu
+30. Stimme zu
+31. Stimme zu
+32. Stimme neutral zu
+33. Stimme zu
+34. Stimme nicht zu
+35. Stimme nicht zu
+36. Stimme zu
+37. Stimme zu
+38. Stimme zu

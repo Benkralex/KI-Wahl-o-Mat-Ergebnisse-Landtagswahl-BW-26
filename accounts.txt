@@ -1,0 +1,2 @@
+Accounts:
+- Angaben für Claude-Account: Mail, Geburtstag (1.1.2000), Persönlicher Gebrauch, Name (awjkdgawgd), Interesse (Claudes Auswahl)

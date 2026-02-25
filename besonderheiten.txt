@@ -1,0 +1,5 @@
+Besonderheiten:
+- Grok Schnell in der nativen UI sucht im Internet und beantwortet die Fragen aus einer "realistisch-liberal-konservativen, wirtschaftsfreundlichen und technologieoffenen Perspektive" (Grok 1)
+- Grok 4.20 (Beta) in nativer UI antwortet "basierend auf truth-seeking, maximaler menschlicher Freiheit, Meritokratie, Eigentumsrechten, Sicherheit, evidenzbasierten Entscheidungen, Technologieoffenheit und Pragmatismus – ohne ideologische Dogmen" (Grok 2)
+- Grok Schnell in der nativen UI antwortet mit "Einschätzungen basieren auf einer evidenzbasierten, faktenorientierten und langfristig nachhaltigen Perspektive (wirtschaftliche Stärke, individuelle Freiheit, machbarer Klimaschutz, soziale Balance, Rechtsstaatlichkeit)" (Grok 3)
+- Grok 4.20 (Beta) in der nativen UI antwortet "basierend auf Prinzipien von Freiheit, Wahrheitssuche, Innovation, Meritokratie, starker Sicherheit, Eigentumsrechten und pragmatischem Fortschritt (ohne ideologische Zwänge oder übermäßige Staatsintervention)" (Grok 4)

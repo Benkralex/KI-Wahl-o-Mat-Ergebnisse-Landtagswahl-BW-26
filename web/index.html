@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wahl-o-Mat AI Analyse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: end;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        select, input {
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .question-panel {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 0 0 20px 0;
+        }
+
+        .question-panel summary {
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .question-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .question-toolbar {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .question-toolbar input {
+            width: 100%;
+        }
+
+        .question-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px 20px;
+            max-height: 320px;
+            overflow: auto;
+            padding-right: 10px;
+        }
+
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.95em;
+        }
+
+        .question-item input {
+            margin-top: 3px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:hover {
+            background: #f5f7ff;
+        }
+
+        .model-cell {
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .ui-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #e8eaf6;
+            color: #667eea;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .response-cell {
+            text-align: center;
+            font-weight: 600;
+            min-width: 45px;
+        }
+
+        .response-1 {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .response-0 {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .response--1 {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .response-- {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 30px;
+            color: #999;
+        }
+
+        .no-data p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .visualization {
+            margin-top: 40px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comparison-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .comparison-card h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .response-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .response-stat {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .response-stat.agree {
+            background: #e8f5e9;
+        }
+
+        .response-stat.disagree {
+            background: #ffebee;
+        }
+
+        .response-stat.neutral {
+            background: #fff3e0;
+        }
+
+        .response-stat.unsure {
+            background: #f3e5f5;
+        }
+
+        .response-stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .response-stat-label {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c62828;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-wrapper {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 8px 10px;
+            }
+
+            .question-toolbar {
+                grid-template-columns: 1fr;
+            }
+
+            .question-list {
+                grid-template-columns: 1fr;
+                max-height: 260px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗳️ Wahl-o-Mat AI Analyse</h1>
+            <p>
+                Ich habe 8 KI Modellen die Fragen des <a href="https://www.wahl-o-mat.de/bw2026/" target="_blank">Wahl-o-Mats (https://www.wahl-o-mat.de/bw2026/)</a> für die Landtagswahl in BW 2026 gestellt. 
+                Auf dieser Seite werden die Ergebnisse angezeigt. Die vollständigen rohen Daten findest du unter <a href="https://github.com/" target="_blank">https://github.com/</a>. 
+                Ich habe alle Modelle in einem Inkognito Fenster und ohne Account bzw. bei Anthropic mit einem neuen, frischen Account ohne persönliche Infos (siehe <a href="https://github.com/" target="_blank">https://github.com/</a>) getestet.
+            </p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="modelFilter">Modell:</label>
+                <select id="modelFilter">
+                    <option value="">Alle Modelle</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="uiFilter">UI:</label>
+                <select id="uiFilter">
+                    <option value="">Alle UIs</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="laufFilter">Lauf:</label>
+                <select id="laufFilter">
+                    <option value="">Alle Läufe</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="searchInput">Suche:</label>
+                <input type="text" id="searchInput" placeholder="Nach Modell filtern...">
+            </div>
+
+            <button onclick="resetFilters()">Filter zurücksetzen</button>
+        </div>
+
+        <div class="content">
+            <div id="errorContainer"></div>
+
+            <details class="question-panel" open>
+                <summary>Fragen auswählen</summary>
+                <div class="question-toolbar">
+                    <input type="text" id="questionSearch" placeholder="Fragen durchsuchen...">
+                    <button type="button" onclick="selectAllQuestions()">Alle auswählen</button>
+                    <button type="button" onclick="clearAllQuestions()">Keine</button>
+                </div>
+                <div id="questionList" class="question-list"></div>
+            </details>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalRecords">0</div>
+                    <div class="stat-label">Datensätze</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="uniqueModels">0</div>
+                    <div class="stat-label">Modelle</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="uniqueUIs">0</div>
+                    <div class="stat-label">UIs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalQuestions">38</div>
+                    <div class="stat-label">Fragen</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="selectedQuestions">38</div>
+                    <div class="stat-label">Angezeigt</div>
+                </div>
+            </div>
+
+            <div id="loadingContainer" class="loading" style="display: none;">
+                <p>⏳ Daten werden geladen...</p>
+            </div>
+
+            <div id="tableContainer"></div>
+
+            <div id="visualizationContainer" class="visualization"></div>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        let filteredData = [];
+        let questions = [];
+        let selectedQuestionIndexes = new Set();
+
+        // Load CSV data
+        async function loadData() {
+            try {
+                document.getElementById('loadingContainer').style.display = 'block';
+                
+            await loadQuestions();
+
+                const response = await fetch('../results.csv');
+                const text = await response.text();
+                
+                // Parse CSV
+                const lines = text.trim().split('\n');
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                allData = lines.slice(1).map((line, index) => {
+                    const values = parseCSVLine(line);
+                    return {
+                        id: index,
+                        model: values[0] || '',
+                        ui: values[1] || '',
+                        lauf: values[2] || '',
+                        responses: values.slice(3)
+                    };
+                }).filter(row => row.model); // Filter out empty rows
+                
+                document.getElementById('loadingContainer').style.display = 'none';
+                
+                initializeFilters();
+                renderQuestionSelector();
+                updateStatistics();
+                displayData(allData);
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Daten:', error);
+                document.getElementById('errorContainer').innerHTML = 
+                    `<div class="error">❌ Fehler beim Laden der CSV-Datei: ${error.message}</div>`;
+                document.getElementById('loadingContainer').style.display = 'none';
+            }
+        }
+
+        // Load questions
+        async function loadQuestions() {
+            try {
+                const response = await fetch('../questions.csv');
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                questions = lines.map(line => {
+                    const values = parseCSVLine(line);
+                    return values[1] || '';
+                }).filter(Boolean);
+                selectedQuestionIndexes = new Set(questions.map((_, i) => i));
+            } catch (error) {
+                console.error('Fehler beim Laden der Fragen:', error);
+                questions = [];
+                selectedQuestionIndexes = new Set();
+            }
+        }
+
+        function renderQuestionSelector() {
+            const list = document.getElementById('questionList');
+            const searchInput = document.getElementById('questionSearch');
+
+            const renderList = () => {
+                const query = searchInput.value.trim().toLowerCase();
+                list.innerHTML = questions.map((q, index) => {
+                    const matches = !query || q.toLowerCase().includes(query);
+                    if (!matches) return '';
+                    const checked = selectedQuestionIndexes.has(index) ? 'checked' : '';
+                    return `
+                        <label class="question-item">
+                            <input type="checkbox" data-index="${index}" ${checked}>
+                            <span>${index + 1}. ${escapeHtml(q)}</span>
+                        </label>
+                    `;
+                }).join('');
+
+                list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const idx = Number(e.target.getAttribute('data-index'));
+                        if (e.target.checked) {
+                            selectedQuestionIndexes.add(idx);
+                        } else {
+                            selectedQuestionIndexes.delete(idx);
+                        }
+                        updateQuestionStats();
+                        displayData(filteredData.length ? filteredData : allData);
+                    });
+                });
+            };
+
+            searchInput.addEventListener('input', renderList);
+            renderList();
+            updateQuestionStats();
+        }
+
+        function updateQuestionStats() {
+            const total = questions.length || 38;
+            document.getElementById('totalQuestions').textContent = total;
+            document.getElementById('selectedQuestions').textContent = selectedQuestionIndexes.size;
+        }
+
+        function selectAllQuestions() {
+            selectedQuestionIndexes = new Set(questions.map((_, i) => i));
+            renderQuestionSelector();
+            displayData(filteredData.length ? filteredData : allData);
+        }
+
+        function clearAllQuestions() {
+            selectedQuestionIndexes = new Set();
+            renderQuestionSelector();
+            displayData(filteredData.length ? filteredData : allData);
+        }
+
+        // Parse CSV line with quoted values
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
+        }
+
+        // Initialize filter dropdowns
+        function initializeFilters() {
+            const models = [...new Set(allData.map(d => d.model))].sort();
+            const uis = [...new Set(allData.map(d => d.ui))].sort();
+            const laeufe = [...new Set(allData.map(d => d.lauf))].sort();
+            
+            const modelFilter = document.getElementById('modelFilter');
+            const uiFilter = document.getElementById('uiFilter');
+            const laufFilter = document.getElementById('laufFilter');
+            
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                modelFilter.appendChild(option);
+            });
+            
+            uis.forEach(ui => {
+                const option = document.createElement('option');
+                option.value = ui;
+                option.textContent = ui;
+                uiFilter.appendChild(option);
+            });
+            
+            laeufe.forEach(lauf => {
+                const option = document.createElement('option');
+                option.value = lauf;
+                option.textContent = lauf;
+                laufFilter.appendChild(option);
+            });
+            
+            // Add event listeners
+            modelFilter.addEventListener('change', applyFilters);
+            uiFilter.addEventListener('change', applyFilters);
+            laufFilter.addEventListener('change', applyFilters);
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+        }
+
+        // Apply all filters
+        function applyFilters() {
+            const modelFilter = document.getElementById('modelFilter').value;
+            const uiFilter = document.getElementById('uiFilter').value;
+            const laufFilter = document.getElementById('laufFilter').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredData = allData.filter(item => {
+                const matchModel = !modelFilter || item.model === modelFilter;
+                const matchUI = !uiFilter || item.ui === uiFilter;
+                const matchLauf = !laufFilter || item.lauf === laufFilter;
+                const matchSearch = !searchInput || item.model.toLowerCase().includes(searchInput);
+                
+                return matchModel && matchUI && matchLauf && matchSearch;
+            });
+            
+            updateStatistics();
+            displayData(filteredData);
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const data = filteredData.length > 0 ? filteredData : allData;
+            
+            document.getElementById('totalRecords').textContent = data.length;
+            document.getElementById('uniqueModels').textContent = 
+                [...new Set(data.map(d => d.model))].length;
+            document.getElementById('uniqueUIs').textContent = 
+                [...new Set(data.map(d => d.ui))].length;
+        }
+
+        // Display data in table
+        function displayData(data) {
+            const container = document.getElementById('tableContainer');
+            
+            if (data.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <p>📭 Keine Daten gefunden</p>
+                        <p>Passen Sie die Filter an, um Ergebnisse zu sehen.</p>
+                    </div>
+                `;
+                document.getElementById('visualizationContainer').innerHTML = '';
+                return;
+            }
+            
+            const selectedIndexes = [...selectedQuestionIndexes].sort((a, b) => a - b);
+            const questionHeaders = selectedIndexes.map(i => {
+                const qIndex = i + 1;
+                const questionText = questions[i] ? escapeHtml(questions[i]) : `Frage ${qIndex}`;
+                return `<th title="${questionText}">${qIndex}</th>`;
+            }).join('');
+
+            let html = `
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Modell</th>
+                                <th>UI</th>
+                                <th>Lauf</th>
+                                <th colspan="${selectedIndexes.length}">Fragen</th>
+                            </tr>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                ${questionHeaders}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.forEach(row => {
+                html += `
+                    <tr>
+                        <td class="model-cell">${escapeHtml(row.model)}</td>
+                        <td><span class="ui-badge">${escapeHtml(row.ui)}</span></td>
+                        <td>${row.lauf}</td>
+                `;
+                
+                selectedIndexes.forEach((idx) => {
+                    const response = row.responses[idx];
+                    //const cleanResponse = response.replace(/[?0-9]/g, (m) => m === '?' ? '?' : m);
+                    const responseClass = getResponseClass(response);
+                    const displayValue = response === '0' ? '~' : response === '1' ? '✓' : response === '-1' ? '✗' : '-';
+                    
+                    html += `<td class="response-cell response-${responseClass}">${displayValue}</td>`;
+                });
+                
+                html += `</tr>`;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            displayVisualization(data);
+        }
+
+        // Get response class for styling
+        function getResponseClass(response) {
+            if (response === '1' || response === 1) return '1';
+            if (response === '-1' || response === -1) return '-1';
+            if (response === '0' || response === 0) return '0';
+            return '-';
+        }
+
+        // Display comparison visualization
+        function displayVisualization(data) {
+            if (data.length === 0) return;
+            
+            let html = '<h2>📊 Vergleichsanalyse</h2><div class="comparison-grid">';
+            
+            data.forEach(row => {
+                const responses = row.responses;
+                const agree = responses.filter(r => r === '1').length;
+                const disagree = responses.filter(r => r === '-1').length;
+                const neutral = responses.filter(r => r === '0').length;
+                const unsure = responses.filter(r => r === '-').length;
+                
+                html += `
+                    <div class="comparison-card">
+                        <h3>${escapeHtml(row.model)} <span class="ui-badge">${escapeHtml(row.ui)}</span></h3>
+                        <div class="response-stats">
+                            <div class="response-stat agree">
+                                <span class="response-stat-value">${agree}</span>
+                                <span class="response-stat-label">Zustimmung</span>
+                            </div>
+                            <div class="response-stat disagree">
+                                <span class="response-stat-value">${disagree}</span>
+                                <span class="response-stat-label">Ablehnung</span>
+                            </div>
+                            <div class="response-stat neutral">
+                                <span class="response-stat-value">${neutral}</span>
+                                <span class="response-stat-label">Neutral</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9em; color: #666;">
+                            <p>Lauf: <strong>${row.lauf}</strong></p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            document.getElementById('visualizationContainer').innerHTML = html;
+        }
+
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('modelFilter').value = '';
+            document.getElementById('uiFilter').value = '';
+            document.getElementById('laufFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            
+            applyFilters();
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

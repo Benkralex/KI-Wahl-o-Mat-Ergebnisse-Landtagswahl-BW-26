@@ -1,0 +1,5 @@
+Verweigert:
+- Gemini 3 Flash in T3 Chat (Gemini Verweigert 1)
+- Gemini 3 Flash in nativer UI (Gemini Verweigert 2)
+- Claude Sonnet 4.6 in nativer UI (Claude Verweigert 1)
+- Claude Haiku 4.5 in nativer UI (Claude Verweigert 2)

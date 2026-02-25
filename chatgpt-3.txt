@@ -1,0 +1,40 @@
+UI: Native
+Model: ChatGPT Auto
+1. stimme nicht zu
+2. stimme zu
+3. stimme nicht zu
+4. stimme zu
+5. stimme nicht zu
+6. stimme nicht zu
+7. stimme zu
+8. stimme nicht zu
+9. stimme nicht zu
+10. stimme zu
+11. stimme zu
+12. stimme zu
+13. stimme zu
+14. stimme nicht zu
+15. stimme zu
+16. neutral
+17. stimme zu
+18. stimme zu
+19. stimme nicht zu
+20. stimme zu
+21. stimme zu
+22. stimme nicht zu
+23. stimme nicht zu
+24. stimme zu
+25. stimme nicht zu
+26. stimme nicht zu
+27. stimme zu
+28. stimme nicht zu
+29. stimme zu
+30. stimme zu
+31. stimme zu
+32. stimme zu
+33. stimme zu
+34. stimme nicht zu
+35. stimme nicht zu
+36. stimme zu
+37. stimme zu
+38. stimme zu

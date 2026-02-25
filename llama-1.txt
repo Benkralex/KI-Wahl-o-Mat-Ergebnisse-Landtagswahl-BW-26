@@ -1,0 +1,40 @@
+UI: T3 Chat
+Model: Llama 4 Scout
+1. Neutral
+2. Stimme zu
+3. Stimme nicht zu
+4. Stimme zu
+5. Stimme nicht zu
+6. Neutral
+7. Stimme zu
+8. Stimme nicht zu
+9. Neutral
+10. Stimme zu
+11. Neutral
+12. Stimme zu
+13. Stimme zu
+14. Neutral
+15. Stimme zu
+16. Neutral
+17. Stimme zu
+18. Neutral
+19. Neutral
+20. Stimme zu
+21. Stimme zu
+22. Neutral
+23. Neutral
+24. Neutral
+25. Stimme zu
+26. Neutral
+27. Neutral
+28. Stimme nicht zu
+29. Stimme zu
+30. Stimme zu
+31. Stimme zu
+32. Neutral
+33. Stimme zu
+34. Stimme nicht zu
+35. Stimme nicht zu
+36. Neutral
+37. Stimme zu
+38. Stimme zu
