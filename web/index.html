@@ -261,6 +261,99 @@
             color: #7b1fa2;
         }
 
+        .party-score {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .score-high {
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            color: white;
+        }
+
+        .score-medium {
+            background: linear-gradient(135deg, #f57c00, #ff9800);
+            color: white;
+        }
+
+        .score-low {
+            background: linear-gradient(135deg, #c62828, #e53935);
+            color: white;
+        }
+
+        .party-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .party-name {
+            min-width: 150px;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .party-bar-wrapper {
+            flex: 1;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .party-bar {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .party-score-value {
+            min-width: 50px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .results-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .results-card h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.2em;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .results-card .ui-badge {
+            margin-left: 8px;
+        }
+
         .no-data {
             text-align: center;
             padding: 60px 30px;
@@ -352,28 +445,65 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 25px 20px;
+            }
+
             header h1 {
                 font-size: 1.8em;
             }
 
+            header p {
+                font-size: 0.95em;
+            }
+
             .controls {
                 grid-template-columns: 1fr;
+                padding: 20px;
             }
 
             .stats {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 1.5em;
             }
 
             .comparison-grid {
                 grid-template-columns: 1fr;
             }
 
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .party-bar-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .party-name {
+                min-width: auto;
+            }
+
             .table-wrapper {
-                font-size: 0.9em;
+                font-size: 0.85em;
+                border-radius: 6px;
             }
 
             th, td {
-                padding: 8px 10px;
+                padding: 8px 6px;
             }
 
             .question-toolbar {
@@ -383,6 +513,29 @@
             .question-list {
                 grid-template-columns: 1fr;
                 max-height: 260px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            button {
+                font-size: 0.9em;
+                padding: 10px 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5em;
+            }
+
+            .stat-value {
+                font-size: 1.3em;
+            }
+
+            .results-card {
+                padding: 15px;
             }
         }
     </style>
@@ -400,6 +553,14 @@
         </header>
 
         <div class="controls">
+            <div class="control-group">
+                <label for="viewMode">Ansicht:</label>
+                <select id="viewMode" onchange="switchView()">
+                    <option value="questions">Einzelantworten</option>
+                    <option value="results">Parteiübereinstimmung</option>
+                </select>
+            </div>
+
             <div class="control-group">
                 <label for="modelFilter">Modell:</label>
                 <select id="modelFilter">
@@ -480,13 +641,16 @@
         let filteredData = [];
         let questions = [];
         let selectedQuestionIndexes = new Set();
+        let wahlOMatResults = [];
+        let currentView = 'questions';
 
         // Load CSV data
         async function loadData() {
             try {
                 document.getElementById('loadingContainer').style.display = 'block';
                 
-            await loadQuestions();
+                await loadQuestions();
+                await loadWahlOMatResults();
 
                 const response = await fetch('../results.csv');
                 const text = await response.text();
@@ -536,6 +700,52 @@
                 console.error('Fehler beim Laden der Fragen:', error);
                 questions = [];
                 selectedQuestionIndexes = new Set();
+            }
+        }
+
+        // Load Wahl-o-Mat results
+        async function loadWahlOMatResults() {
+            try {
+                const response = await fetch('../wahl-o-mat-results.csv');
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                const headers = parseCSVLine(lines[0]);
+                const parties = headers.slice(4); // Skip Model, UI, Lauf, columns
+                
+                wahlOMatResults = lines.slice(1).map((line, index) => {
+                    const values = parseCSVLine(line);
+                    const scores = {};
+                    parties.forEach((party, idx) => {
+                        const score = parseFloat(values[4 + idx]);
+                        if (!isNaN(score)) {
+                            scores[party.trim()] = score;
+                        }
+                    });
+                    return {
+                        id: index,
+                        model: values[0] || '',
+                        ui: values[1] || '',
+                        lauf: values[2] || '',
+                        scores: scores
+                    };
+                }).filter(row => row.model && Object.keys(row.scores).length > 0);
+                
+            } catch (error) {
+                console.error('Fehler beim Laden der Wahl-o-Mat Ergebnisse:', error);
+                wahlOMatResults = [];
+            }
+        }
+
+        function switchView() {
+            currentView = document.getElementById('viewMode').value;
+            const questionPanel = document.querySelector('.question-panel');
+            
+            if (currentView === 'results') {
+                questionPanel.style.display = 'none';
+                displayWahlOMatResults(filteredData.length > 0 ? filteredData : allData);
+            } else {
+                questionPanel.style.display = 'block';
+                displayData(filteredData.length > 0 ? filteredData : allData);
             }
         }
 
@@ -672,7 +882,11 @@
             });
             
             updateStatistics();
-            displayData(filteredData);
+            if (currentView === 'results') {
+                displayWahlOMatResults(filteredData);
+            } else {
+                displayData(filteredData);
+            }
         }
 
         // Update statistics
@@ -806,6 +1020,141 @@
             html += '</div>';
             
             document.getElementById('visualizationContainer').innerHTML = html;
+        }
+
+        // Display Wahl-o-Mat results
+        function displayWahlOMatResults(data) {
+            const container = document.getElementById('tableContainer');
+            const vizContainer = document.getElementById('visualizationContainer');
+            
+            // Filter wahl-o-mat results based on current data filter
+            const relevantResults = wahlOMatResults.filter(result => {
+                return data.some(d => 
+                    d.model === result.model && 
+                    d.ui === result.ui && 
+                    d.lauf === result.lauf
+                );
+            });
+            
+            if (relevantResults.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data">
+                        <p>📭 Keine Wahl-o-Mat Ergebnisse gefunden</p>
+                        <p>Passen Sie die Filter an, um Ergebnisse zu sehen.</p>
+                    </div>
+                `;
+                vizContainer.innerHTML = '';
+                return;
+            }
+            
+            // Create a summary table
+            let html = `
+                <h2>🗳️ Parteiübereinstimmung (Wahl-o-Mat Ergebnisse)</h2>
+                <div class="results-grid">
+            `;
+            
+            relevantResults.forEach(result => {
+                // Sort parties by score (descending)
+                const sortedParties = Object.entries(result.scores)
+                    .sort((a, b) => b[1] - a[1]);
+                
+                html += `
+                    <div class="results-card">
+                        <h3>${escapeHtml(result.model)} <span class="ui-badge">${escapeHtml(result.ui)}</span> (Lauf ${result.lauf})</h3>
+                `;
+                
+                sortedParties.forEach(([party, score]) => {
+                    const barWidth = score;
+                    let barColor = '#4caf50';
+                    if (score < 40) barColor = '#e53935';
+                    else if (score < 60) barColor = '#ff9800';
+                    
+                    html += `
+                        <div class="party-bar-container">
+                            <div class="party-name">${escapeHtml(party)}</div>
+                            <div class="party-bar-wrapper">
+                                <div class="party-bar" style="width: ${barWidth}%; background: ${barColor};">
+                                    ${score >= 20 ? score.toFixed(1) + '%' : ''}
+                                </div>
+                            </div>
+                            <div class="party-score-value">${score.toFixed(1)}%</div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            // Create comparison visualization
+            displayWahlOMatComparison(relevantResults);
+        }
+
+        // Display comparison of Wahl-o-Mat results
+        function displayWahlOMatComparison(results) {
+            const vizContainer = document.getElementById('visualizationContainer');
+            
+            if (results.length === 0) {
+                vizContainer.innerHTML = '';
+                return;
+            }
+            
+            // Get all unique parties
+            const allParties = new Set();
+            results.forEach(result => {
+                Object.keys(result.scores).forEach(party => allParties.add(party));
+            });
+            
+            const parties = [...allParties].sort();
+            
+            let html = `
+                <h2>📊 Parteivergleich über alle Modelle</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Modell</th>
+                                <th>UI</th>
+                                <th>Lauf</th>
+                                ${parties.map(p => `<th>${escapeHtml(p)}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            results.forEach(result => {
+                html += `
+                    <tr>
+                        <td class="model-cell">${escapeHtml(result.model)}</td>
+                        <td><span class="ui-badge">${escapeHtml(result.ui)}</span></td>
+                        <td>${result.lauf}</td>
+                `;
+                
+                parties.forEach(party => {
+                    const score = result.scores[party];
+                    if (score !== undefined) {
+                        let scoreClass = 'score-high';
+                        if (score < 40) scoreClass = 'score-low';
+                        else if (score < 60) scoreClass = 'score-medium';
+                        
+                        html += `<td style="text-align: center;"><span class="party-score ${scoreClass}">${score.toFixed(1)}%</span></td>`;
+                    } else {
+                        html += `<td style="text-align: center;">-</td>`;
+                    }
+                });
+                
+                html += `</tr>`;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            vizContainer.innerHTML = html;
         }
 
         // Reset filters
